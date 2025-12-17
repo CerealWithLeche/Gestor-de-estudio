@@ -21,9 +21,11 @@ Para comenzar a usarla, solo sigue estos dos pasos:
 2. **Abre el archivo** calendario index desde tu navegador
 
 <div align="center">
-   <img width="660" height="350" alt="Screenshot_17-Dec_13-58-48_20895" src="https://github.com/user-attachments/assets/96e9abd7-a83d-461e-a675-1382e9931b04" />
+   <img width="660" height="350" alt="image" src="https://github.com/user-attachments/assets/7e52189e-d073-4537-ba1f-fd7a1f53f7d0" />
+
    <p></p>
-  <img width="660" height="350" alt="image" src="https://github.com/user-attachments/assets/92b508ca-0c4f-4dd8-afe2-ecbbf641bb8e" />
+  <img width="660" height="350" alt="image" src="https://github.com/user-attachments/assets/594b92ad-67d2-4567-acda-cabad237f95a" />
+
 </div>
 
 ---
