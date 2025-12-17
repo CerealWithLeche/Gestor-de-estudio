@@ -34,7 +34,8 @@ Para comenzar a utilizar el gestor, es necesario completar la configuración ini
 
 1. **Conexión con la IA:** Ingresa tu **Google API Key** en la caja de texto dedicada. Esta llave es necesaria para habilitar el servicio de LLM (Gemini) que potencia el chatbot y el análisis de tus notas.
 2. **Definición del Semestre:** Establece la **fecha de inicio y fin** de tu periodo escolar. Esto delimita el rango de acción del calendario dinámico.
-3. **Carga Académica:** - Agrega tus **materias** una a una.
+3. **Carga Académica:**
+   - Agrega tus **materias** una a una.
    - Asigna un **color personalizado** a cada materia para una identificación visual rápida en el calendario.
 4. **Horario Semanal:** Una vez creadas las materias, selecciona los **días de la semana** en los que tienes clase de cada una para que el sistema organice automáticamente tus entradas diarias.
 
@@ -48,7 +49,7 @@ Para garantizar el control total sobre tus datos, la aplicación incluye una sec
 * **Reset Total:** Un botón diseñado para borrar instantáneamente toda la información guardada (materias, notas, historial del chat y configuraciones). 
 * *Nota: Esta acción es irreversible y deja la aplicación como nueva.*
 
-##Próximas Actualizaciones
+## Próximas Actualizaciones
 - **Soporte Multi-Modelo:** Integración para utilizar el chatbot con API Keys de **OpenAI** y **DeepSeek**, permitiendo al usuario elegir su motor de IA preferido.
 - **Exportación de Datos:** Opción para descargar tus notas y horarios en formato PDF o JSON.
 - **Modo Oscuro:** Interfaz adaptativa para sesiones de estudio nocturnas.
