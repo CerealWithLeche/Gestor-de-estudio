@@ -17,7 +17,7 @@ Para comenzar a usarla, solo sigue estos dos pasos:
 
 1. **Clona el repositorio** en tu máquina local:
    ```bash
-   git clone [https://github.com/tu-usuario/Gestor-de-estudio.git](https://github.com/tu-usuario/Gestor-de-estudio.git)
+   [git clone [https://github.com/tu-usuario/Gestor-de-estudio.git](https://github.com/tu-usuario/Gestor-de-estudio.git)](https://github.com/CerealWithLeche/Gestor-de-estudio.git)
 2. **Abre el archivo** calendario index desde tu navegador
 
 <div align="center">
