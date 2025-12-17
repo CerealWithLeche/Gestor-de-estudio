@@ -12,5 +12,5 @@ Esta aplicación está dirigida principalmente a estudiantes. Consiste en un viz
 </table>
 
 
-<img width="700" height="350" alt="Screenshot_17-Dec_13-48-19_29836" src="https://github.com/user-attachments/assets/406bfebb-a666-494a-b4cc-fc2f038463b8" />
-<img width="700" height="350" alt="Screenshot_17-Dec_13-53-03_23808" src="https://github.com/user-attachments/assets/4e73f31f-480d-4834-9a3c-550ef3ad3609" />
+<img width="660" height="350" alt="Screenshot_17-Dec_13-48-19_29836" src="https://github.com/user-attachments/assets/406bfebb-a666-494a-b4cc-fc2f038463b8" />
+<img width="660" height="350" alt="Screenshot_17-Dec_13-53-03_23808" src="https://github.com/user-attachments/assets/4e73f31f-480d-4834-9a3c-550ef3ad3609" />
