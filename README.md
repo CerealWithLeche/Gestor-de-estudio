@@ -18,7 +18,7 @@ Para comenzar a usarla, solo sigue estos dos pasos:
 1. **Clona el repositorio** en tu máquina local:
    ```bash
       git clone https://github.com/CerealWithLeche/Gestor-de-estudio.git
-2. **Abre el archivo** calendario index desde tu navegador
+2. **Abre el archivo** calendario-index.html desde tu navegador
 
 <div align="center">
    <img width="660" height="350" alt="image" src="https://github.com/user-attachments/assets/7e52189e-d073-4537-ba1f-fd7a1f53f7d0" />
