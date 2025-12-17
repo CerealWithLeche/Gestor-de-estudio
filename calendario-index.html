@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Estudio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- LIBRERÍAS EXTERNAS (Markdown y Matemáticas) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- GOOGLE AI SDK -->
+    <script type="importmap">
+        {
+            "imports": {
+            "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+        window.GoogleGenerativeAI = GoogleGenerativeAI;
+    </script>
+
+    <style>
+        /* ==================== */
+        /* CSS MODERNO (UI/UX)  */
+        /* ==================== */
+        :root {
+            --primary-color: #4f46e5;       
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --secondary-color: #10b981;     
+            --secondary-dark: #059669;
+            --accent-color: #f43f5e;        
+            
+            --bg-color: #f3f4f6;            
+            --card-bg: #ffffff;
+            
+            --text-main: #1f2937;           
+            --text-muted: #6b7280;          
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh; 
+            overflow: hidden; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .contenedor-principal {
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            letter-spacing: -0.025em;
+        }
+
+        .view {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .hidden-view { display: none !important; }
+        
+        button {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        button:hover { background-color: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        button:active { transform: translateY(0); }
+        .secondary-button { background-color: var(--secondary-color); }
+        .secondary-button:hover { background-color: var(--secondary-dark); }
+
+        input, select, textarea {
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            font-family: inherit;
+            transition: var(--transition);
+            background-color: #f8fafc;
+            width: 100%;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* =========================== */
+        /* CALENDARIO                  */
+        /* =========================== */
+        #calendar-view .content { display: flex; gap: 20px; flex: 1; height: 100%; overflow: hidden; }
+        .columna-calendario { flex: 3; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+        .columna-info { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 280px; max-width: 350px; }
+
+        #encabezado-calendario {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: var(--radius-md);
+            flex-shrink: 0;
+        }
+
+        #mes-actual { font-size: 1.4em; font-weight: 700; color: var(--text-main); text-align: center; flex-grow: 1; }
+
+        .tabla-contenedor { 
+            flex: 1; 
+            border-radius: var(--radius-md); 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            border: 1px solid #e2e8f0; 
+            position: relative;
+        }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 4px; table-layout: fixed; }
+
+        th { 
+            position: sticky; top: 0; z-index: 50; background-color: #f1f5f9; color: var(--text-muted); 
+            padding: 10px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.05em; 
+            font-weight: 600; height: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        td {
+            background-color: #fff; border: 1px solid #f1f5f9; border-radius: var(--radius-sm); padding: 4px;
+            text-align: center; cursor: pointer; vertical-align: top; position: relative; transition: var(--transition);
+            box-shadow: var(--shadow-sm); height: auto; min-height: 80px;
+        }
+
+        td:hover:not(.dia-vacio) { transform: translateY(-2px) scale(1.01); border-color: var(--primary-light); box-shadow: var(--shadow-md); z-index: 10; }
+
+        .numero-dia {
+            font-weight: 600; font-size: 0.9em; display: inline-flex; justify-content: center; align-items: center;
+            width: 26px; height: 26px; border-radius: 50%; margin: 2px auto 4px; color: var(--text-muted);
+        }
+
+        .hoy { background-color: #fdf2f8 !important; border-color: #fbcfe8 !important; }
+        .hoy .numero-dia { background-color: var(--accent-color); color: #fff; box-shadow: 0 2px 5px rgba(244, 63, 94, 0.4); }
+        .dia-vacio { background-color: transparent; border: none; box-shadow: none; cursor: default; }
+        .dia-seleccionado { background-color: #eef2ff !important; border: 2px solid var(--primary-color) !important; }
+        .dia-seleccionado .numero-dia { color: var(--primary-dark); font-weight: 800; }
+        
+        .materia-en-dia {
+            font-size: 0.65em; padding: 3px 6px; border-radius: 4px; margin: 2px 0; display: flex; 
+            justify-content: space-between; align-items: center; color: white; font-weight: 500; text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        }
+
+        .status-dot-in-calendar {
+            width: 8px; height: 8px; border-radius: 50%; background-color: white; 
+            box-shadow: 0 0 2px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
+        }
+
+        #info-semestre, #resumen-eventos {
+            padding: 20px; border: 1px solid #e2e8f0; border-radius: var(--radius-md); background: linear-gradient(to bottom right, #ffffff, #f8fafc); flex-shrink: 0;
+        }
+        
+        #resumen-eventos { margin-top: 0 !important; flex-grow: 1; }
+        #info-semestre h2, #resumen-eventos h2 { font-size: 1.1em; color: var(--text-main); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; }
+        #resumen-lista { list-style: none; }
+        #resumen-lista li { margin-bottom: 8px; font-size: 0.9em; display: flex; align-items: center; }
+
+        #settings-view, #day-detail-view { overflow-y: auto; max-width: 1200px; margin: 0 auto; width: 100%; }
+        #settings-view h2, #day-detail-view h2 { font-size: 1.8em; font-weight: 700; margin-bottom: 25px; }
+
+        .form-group { background: #fff; margin-bottom: 20px; border: 1px solid #e2e8f0; padding: 20px; border-radius: var(--radius-md); transition: var(--transition); }
+        .form-group:hover { border-color: #cbd5e1; box-shadow: var(--shadow-sm); }
+
+        #subjects-list li { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); margin-bottom: 8px; padding: 10px 15px; border-bottom: none; }
+        input[type="checkbox"] { width: auto; margin-right: 8px; accent-color: var(--primary-color); }
+
+        .day-content-container { display: flex; gap: 25px; height: calc(100% - 70px); }
+        #notes-section, #chat-section { flex: 1; display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 0; background: #fff; height: 100%; overflow: hidden; box-shadow: var(--shadow-sm); }
+        #notes-section h3, #chat-section h3 { background: #f8fafc; padding: 15px; margin: 0; border-bottom: 1px solid #e2e8f0; font-size: 1em; color: var(--text-main); font-weight: 600; }
+        #subject-notes-container { flex: 1; overflow-y: auto; padding: 20px; }
+
+        .notes-group { margin-bottom: 25px; padding: 15px; border: 1px solid #e2e8f0; border-radius: var(--radius-md); background: #fff; box-shadow: var(--shadow-sm); border-left-width: 6px !important; }
+        .notes-group h3 { background: none; padding: 0 0 10px 0; border-bottom: 1px dashed #e2e8f0; margin-bottom: 10px; }
+
+        /* =========================== */
+        /* CHAT STYLES (MEJORADO)      */
+        /* =========================== */
+        #chat-messages { flex: 1; overflow-y: auto; padding: 20px; background-color: #f9fafb; display: flex; flex-direction: column; gap: 12px; }
+        
+        .chat-message { 
+            padding: 12px 16px; 
+            border-radius: 18px; 
+            max-width: 85%; 
+            line-height: 1.6; 
+            font-size: 0.95em; 
+            position: relative; 
+            box-shadow: var(--shadow-sm); 
+            animation: fadeIn 0.3s ease;
+            word-wrap: break-word;
+        }
+
+        /* Formato Markdown dentro del chat */
+        .chat-message p { margin-bottom: 8px; }
+        .chat-message p:last-child { margin-bottom: 0; }
+        .chat-message ul, .chat-message ol { margin-left: 20px; margin-bottom: 8px; }
+        .chat-message li { margin-bottom: 4px; }
+        .chat-message strong { font-weight: 700; color: inherit; }
+        .chat-message code { background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+        .chat-user code { background: rgba(255,255,255,0.2); }
+        .katex-display { margin: 10px 0; overflow-x: auto; overflow-y: hidden; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .chat-user { background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-model { background-color: #fff; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e5e7eb; }
+        
+        .chat-input-group { padding: 15px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
+        #chat-input { border-radius: 20px; padding-left: 15px; border: 1px solid #cbd5e1; }
+        #btn-send-chat { border-radius: 20px; padding-left: 20px; padding-right: 20px; }
+
+        #notes-section > button { margin: 15px; width: calc(100% - 30px) !important; }
+        #notes-section > .notes-group:last-of-type { margin: 0 15px; padding: 0; border: none; box-shadow: none; }
+
+        .status-badge { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 4px; box-shadow: 0 0 4px rgba(0,0,0,0.2); }
+
+        @media (max-width: 1024px) {
+            body { height: auto; overflow: auto; }
+            #calendar-view .content { flex-direction: column; }
+            .columna-calendario { height: 600px; }
+            .columna-info { max-width: 100%; margin-top: 20px; }
+            .day-content-container { flex-direction: column; height: auto; }
+            #notes-section, #chat-section { height: 500px; }
+            #resumen-eventos { margin-top: 20px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="contenedor-principal">
+        
+        <div id="calendar-view" class="view">
+            <h1>Gestor de estudio</h1>
+            
+            <div class="content">
+                <div class="columna-calendario">
+                    <div id="encabezado-calendario">
+                        <div class="botones-navegacion">
+                            <button id="btn-prev">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+                            <button id="btn-hoy">Hoy</button>
+                        </div>
+                        <span id="mes-actual"></span>
+                        <div class="botones-navegacion">
+                            <button id="btn-next">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor scrollable para la tabla -->
+                    <div class="tabla-contenedor">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Dom</th>
+                                    <th>Lun</th>
+                                    <th>Mar</th>
+                                    <th>Mié</th>
+                                    <th>Jue</th>
+                                    <th>Vie</th>
+                                    <th>Sáb</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dias-calendario">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="columna-info">
+                    <div id="info-semestre">
+                        <h2>Semestre Activo</h2>
+                        <p id="active-semester-name" style="font-weight: 600; font-size: 1.1em; color: var(--primary-color);">Cargando...</p>
+                        <p id="active-semester-dates" style="color: var(--text-muted); font-size: 0.9em;"></p>
+                        <button id="btn-open-settings" class="secondary-button" style="margin-top: 15px; width: 100%;">⚙️ Configurar</button>
+                    </div>
+                    
+                    <div id="resumen-eventos">
+                        <h2>Resumen del Mes</h2>
+                        <ul id="resumen-lista">
+                            <li><span style="color: #2ecc71;">⚫</span> Días Entendidos: 0</li>
+                            <li><span style="color: #f1c40f;">⚫</span> Días con Revisión: 0</li>
+                            <li><span style="color: #e74c3c;">⚫</span> Días Confusos: 0</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-view" class="view hidden-view">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <button onclick="window.setView('CALENDAR')" style="padding: 5px 10px;">← Volver</button>
+                <h2 style="margin: 0;">Configuración</h2>
+            </div>
+
+            <div class="form-group" style="background-color: #eff6ff; border-color: #bfdbfe;">
+                <label for="api-key-input">🔑 Google Gemini API Key:</label>
+                <input type="password" id="api-key-input" placeholder="Pega tu API Key aquí (comienza con AIza...)">
+                <p style="font-size: 0.8em; color: #64748b; margin-top: 5px;">Tu clave se guarda localmente en tu navegador.</p>
+            </div>
+
+            <div id="semester-setup-form">
+                <div class="form-group">
+                    <label for="semester-name">Nombre del Semestre:</label>
+                    <input type="text" id="semester-name" value="Semestre Actual">
+                </div>
+                
+                <div style="display: flex; gap: 20px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="semester-start-date">Fecha de Inicio:</label>
+                        <input type="date" id="semester-start-date">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="semester-end-date">Fecha de Fin:</label>
+                        <input type="date" id="semester-end-date">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <h3>Materias</h3>
+                    <ul id="subjects-list"></ul>
+                    
+                    <div style="display: flex; gap: 10px; align-items: flex-end; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                        <div style="flex-grow: 1;">
+                            <label for="new-subject-name">Nueva Materia:</label>
+                            <input type="text" id="new-subject-name" placeholder="Ej: Cálculo I">
+                        </div>
+                        <div>
+                            <label for="new-subject-color">Color:</label>
+                            <select id="new-subject-color">
+                                <option value="#4f46e5" style="background-color: #4f46e5; color: white;">Indigo</option>
+                                <option value="#9333ea" style="background-color: #9333ea; color: white;">Morado</option>
+                                <option value="#10b981" style="background-color: #10b981; color: white;">Verde</option>
+                                <option value="#f59e0b" style="background-color: #f59e0b; color: white;">Ambar</option>
+                                <option value="#06b6d4" style="background-color: #06b6d4; color: white;">Cyan</option>
+                                <option value="#ef4444" style="background-color: #ef4444; color: white;">Rojo</option>
+                                <option value="#ec4899" style="background-color: #ec4899; color: white;">Rosa</option>
+                                <option value="#64748b" style="background-color: #64748b; color: white;">Gris</option>
+                            </select>
+                        </div>
+                        <button type="button" id="btn-add-subject" class="secondary-button" style="padding: 10px 15px;">+ Añadir</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Horario Semanal</h3>
+                    <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 15px;">Marca las casillas correspondientes a los días de clase.</p>
+                    <div id="schedule-setup"></div>
+                </div>
+                
+                <button id="btn-save-settings" style="width: 100%; padding: 15px; font-size: 1.1em; margin-top: 10px;">Guardar Todo</button>
+                
+                <!-- SECCIÓN DE RESETEO -->
+                <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                    <h3 style="color: var(--accent-color); margin-bottom: 10px; font-size: 1em;">⚠️ Zona de Peligro</h3>
+                    <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 15px;">
+                        ¿Quieres empezar de cero? Esto borrará tus notas, materias, horarios y API Key. No se puede deshacer.
+                    </p>
+                    <button id="btn-reset-all" style="background-color: var(--accent-color); width: 100%; opacity: 0.9;">
+                        Borrar todo y reiniciar app
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="day-detail-view" class="view hidden-view">
+            <div class="day-detail-header">
+                <button id="btn-back-to-calendar" style="background: transparent; color: var(--text-muted); border: 1px solid #e2e8f0; box-shadow: none;">← Volver</button>
+                <h2 id="day-detail-date-title" style="margin-bottom: 0;">Notas del Día</h2>
+            </div>
+            
+            <div class="day-content-container">
+                <div id="notes-section">
+                    <h3>Tus Apuntes</h3>
+                    <div id="subject-notes-container"></div>
+                    
+                    <div class="notes-group" style="border: none; padding: 0 20px; box-shadow: none; margin-bottom: 0;">
+                        <h4 style="margin-bottom: 10px; color: var(--text-muted);">Notas Adicionales</h4>
+                        <textarea id="free-notes-input" placeholder="Tareas pendientes, recordatorios rápidos..."></textarea>
+                    </div>
+                    
+                    <button id="btn-save-day-notes" class="secondary-button">💾 Guardar Notas</button>
+                </div>
+                
+                <div id="chat-section">
+                    <h3>Asistente Gemini</h3>
+                    <div id="chat-messages">
+                        <div class="chat-message chat-model">¡Hola! Guarda tus notas primero, luego pregúntame lo que necesites para estudiar.</div>
+                    </div>
+                    <div class="chat-input-group">
+                        <input type="text" id="chat-input" placeholder="Ej: Hazme un resumen de la clase de hoy...">
+                        <button id="btn-send-chat">Enviar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT FINAL ACTUALIZADO -->
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        // ====================
+        // VARIABLES GLOBALES
+        // ====================
+        const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const diasNombres = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        
+        const DayStatus = {
+            EMPTY: 'Sin Notas',
+            UNDERSTOOD: 'Entendido',
+            REVIEW_NEEDED: 'Necesita Repaso',
+            CONFUSED: 'Confuso'
+        };
+
+        const STATUS_OPTIONS = [
+            { value: DayStatus.EMPTY, label: 'Sin Notas', color: 'var(--light-gray)', dotColor: 'transparent' },
+            { value: DayStatus.UNDERSTOOD, label: 'Entendido', color: '#dcfce7', dotColor: '#22c55e' }, // Verde
+            { value: DayStatus.REVIEW_NEEDED, label: 'Necesita Repaso', color: '#fef9c3', dotColor: '#eab308' }, // Amarillo
+            { value: DayStatus.CONFUSED, label: 'Confuso', color: '#fee2e2', dotColor: '#ef4444' } // Rojo
+        ];
+
+        let fechaActual = new Date();
+        let mes = fechaActual.getMonth();
+        let anio = fechaActual.getFullYear();
+        const hoy = new Date();
+        
+        let currentView = 'CALENDAR'; 
+        let selectedDay = null;
+        let activeSemester = null; 
+
+        // ====================
+        // UTILIDADES
+        // ====================
+        function normalizarFecha(fechaStr) {
+            if (!fechaStr) return null;
+            const partes = fechaStr.split('-'); 
+            return new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]), 12, 0, 0);
+        }
+
+        function estaDentroDelSemestre(fechaISO, semestre) {
+            if (!semestre || !semestre.startDate || !semestre.endDate) return false;
+            return fechaISO >= semestre.startDate && fechaISO <= semestre.endDate;
+        }
+
+        function obtenerDiaSemana(fechaISO) {
+            const date = normalizarFecha(fechaISO);
+            return date.getDay();
+        }
+
+        // ====================
+        // STORAGE
+        // ====================
+        const STORAGE_KEY_SEMESTER = 'noteMinder_activeSemester';
+        const STORAGE_KEY_DAY_ENTRIES = 'noteMinder_dayEntries';
+        const STORAGE_KEY_API = 'noteMinder_apiKey';
+
+        function getApiKey() { return localStorage.getItem(STORAGE_KEY_API) || ''; }
+        function saveApiKey(key) { localStorage.setItem(STORAGE_KEY_API, key); }
+        function getActiveSemester() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY_SEMESTER)); } catch (e) { return null; } }
+        function saveSemester(semester) { localStorage.setItem(STORAGE_KEY_SEMESTER, JSON.stringify(semester)); }
+        function getAllDayEntries() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY_DAY_ENTRIES)) || {}; } catch (e) { return {}; } }
+        function saveDayEntry(dateStr, entry) {
+            const allEntries = getAllDayEntries();
+            allEntries[dateStr] = entry;
+            localStorage.setItem(STORAGE_KEY_DAY_ENTRIES, JSON.stringify(allEntries));
+        }
+
+        // ====================
+        // VISTAS
+        // ====================
+        const calendarView = document.getElementById('calendar-view');
+        const settingsView = document.getElementById('settings-view');
+        const dayDetailView = document.getElementById('day-detail-view');
+        
+        window.setView = function(newView) {
+            [calendarView, settingsView, dayDetailView].forEach(view => {
+                if (view) view.classList.add('hidden-view');
+            });
+            switch (newView) {
+                case 'CALENDAR': calendarView?.classList.remove('hidden-view'); refreshSemesterInfo(); renderizarCalendario(); break;
+                case 'SETTINGS': calendarView.classList.add('hidden-view'); settingsView?.classList.remove('hidden-view'); renderSettingsView(); break;
+                case 'DAY_DETAIL': dayDetailView?.classList.remove('hidden-view'); loadDayDetail(selectedDay); break;
+            }
+            currentView = newView;
+        }
+
+        function refreshSemesterInfo() {
+            activeSemester = getActiveSemester();
+            const nameSpan = document.getElementById('active-semester-name');
+            const datesSpan = document.getElementById('active-semester-dates');
+            if (activeSemester) {
+                nameSpan.textContent = activeSemester.name;
+                const start = normalizarFecha(activeSemester.startDate).toLocaleDateString();
+                const end = normalizarFecha(activeSemester.endDate).toLocaleDateString();
+                datesSpan.textContent = `Del ${start} al ${end}`;
+            } else {
+                nameSpan.textContent = "¡Ningún semestre configurado!";
+                datesSpan.textContent = "Configura uno para empezar.";
+            }
+        }
+
+        // ====================
+        // CALENDARIO
+        // ====================
+        function renderizarCalendario() {
+            const diasCalendario = document.getElementById('dias-calendario');
+            diasCalendario.innerHTML = '';
+            document.getElementById('mes-actual').textContent = `${mesesNombres[mes]} ${anio}`;
+
+            const primerDiaDelMes = new Date(anio, mes, 1).getDay();
+            const ultimoDiaDelMes = new Date(anio, mes + 1, 0).getDate();
+            const allEntries = getAllDayEntries();
+
+            let diaActual = 1;
+            
+            for (let i = 0; i < 6; i++) {
+                const fila = document.createElement('tr');
+                for (let j = 0; j < 7; j++) {
+                    const celda = document.createElement('td');
+                    const celdaIndex = i * 7 + j;
+                    
+                    if (celdaIndex < primerDiaDelMes || diaActual > ultimoDiaDelMes) {
+                        celda.classList.add('dia-vacio');
+                    } else {
+                        const diaFijo = diaActual; 
+                        const fechaClave = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(diaFijo).padStart(2, '0')}`;
+                        
+                        const numeroDia = document.createElement('span');
+                        numeroDia.classList.add('numero-dia');
+                        numeroDia.textContent = diaFijo;
+                        celda.appendChild(numeroDia);
+
+                        if (diaFijo === hoy.getDate() && mes === hoy.getMonth() && anio === hoy.getFullYear()) celda.classList.add('hoy');
+                        if (selectedDay === fechaClave) celda.classList.add('dia-seleccionado');
+
+                        if (activeSemester && estaDentroDelSemestre(fechaClave, activeSemester)) {
+                            const diaSemana = j; 
+                            const subjectsToday = activeSemester.schedule[diaSemana] || [];
+                            const entry = allEntries[fechaClave];
+
+                            subjectsToday.forEach(subjectId => {
+                                const subject = activeSemester.subjects.find(s => s.id === subjectId);
+                                if (subject) {
+                                    const span = document.createElement('span');
+                                    span.classList.add('materia-en-dia');
+                                    span.style.backgroundColor = subject.color;
+                                    
+                                    const textSpan = document.createElement('span');
+                                    textSpan.textContent = subject.name;
+                                    span.appendChild(textSpan);
+
+                                    if (entry && entry.subjectNotes && entry.subjectNotes[subjectId]) {
+                                        const noteStatus = entry.subjectNotes[subjectId].status;
+                                        const statusObj = STATUS_OPTIONS.find(opt => opt.value === noteStatus);
+                                        
+                                        if (statusObj && noteStatus !== DayStatus.EMPTY) {
+                                            const dot = document.createElement('span');
+                                            dot.classList.add('status-dot-in-calendar');
+                                            dot.style.backgroundColor = statusObj.dotColor;
+                                            dot.title = statusObj.label;
+                                            span.appendChild(dot);
+                                        }
+                                    }
+
+                                    celda.appendChild(span);
+                                }
+                            });
+                        }
+
+                        celda.addEventListener('click', () => seleccionarDia(diaFijo, mes, anio));
+                        diaActual++;
+                    }
+                    fila.appendChild(celda);
+                }
+                diasCalendario.appendChild(fila);
+            }
+            updateResumenEventos(allEntries);
+        }
+
+        function updateResumenEventos(allEntries) {
+            const resumenLista = document.getElementById('resumen-lista');
+            let counts = { [DayStatus.UNDERSTOOD]: 0, [DayStatus.REVIEW_NEEDED]: 0, [DayStatus.CONFUSED]: 0 };
+
+            Object.keys(allEntries).forEach(fechaClave => {
+                const [entryAnio, entryMes] = fechaClave.split('-');
+                if (parseInt(entryAnio) === anio && parseInt(entryMes) === mes + 1) {
+                    const entry = allEntries[fechaClave];
+                    let worstStatus = DayStatus.EMPTY;
+                    for (const subId in entry.subjectNotes) {
+                        const status = entry.subjectNotes[subId].status;
+                        if (status === DayStatus.CONFUSED) { worstStatus = DayStatus.CONFUSED; break; }
+                        if (status === DayStatus.REVIEW_NEEDED && worstStatus !== DayStatus.CONFUSED) { worstStatus = DayStatus.REVIEW_NEEDED; }
+                        if (status === DayStatus.UNDERSTOOD && worstStatus === DayStatus.EMPTY) { worstStatus = DayStatus.UNDERSTOOD; }
+                    }
+                    if (worstStatus in counts) counts[worstStatus]++;
+                }
+            });
+
+            resumenLista.innerHTML = `
+                <li><span class="status-badge" style="background-color: #22c55e;"></span>  Días Entendidos: ${counts[DayStatus.UNDERSTOOD]}</li>
+                <li><span class="status-badge" style="background-color: #eab308;"></span>  Días con Repaso: ${counts[DayStatus.REVIEW_NEEDED]}</li>
+                <li><span class="status-badge" style="background-color: #ef4444;"></span>  Días Confusos: ${counts[DayStatus.CONFUSED]}</li>
+            `;
+        }
+
+        function seleccionarDia(dia, mes, anio) {
+            const fechaClave = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+            selectedDay = fechaClave; 
+            if (!activeSemester) { alert("Configura un semestre primero."); window.setView('SETTINGS'); return; }
+            window.setView('DAY_DETAIL');
+        }
+
+        // ====================
+        // CONFIGURACIÓN
+        // ====================
+        let tempSubjects = [];
+        let tempSchedule = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+
+        function renderSettingsView() {
+            const semester = getActiveSemester();
+            document.getElementById('api-key-input').value = getApiKey();
+            if (semester) {
+                document.getElementById('semester-name').value = semester.name;
+                document.getElementById('semester-start-date').value = semester.startDate || '';
+                document.getElementById('semester-end-date').value = semester.endDate || '';
+                tempSubjects = [...semester.subjects];
+                tempSchedule = { ...semester.schedule };
+            } else {
+                document.getElementById('semester-name').value = "Nuevo Semestre";
+                document.getElementById('semester-start-date').value = '';
+                document.getElementById('semester-end-date').value = '';
+                tempSubjects = [];
+                tempSchedule = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+            }
+            renderSubjectsList();
+            renderScheduleSetup();
+            
+            const select = document.getElementById('new-subject-color');
+            if(select) select.selectedIndex = 0;
+        }
+
+        function seleccionarSiguienteColor() {
+            const select = document.getElementById('new-subject-color');
+            if (select) {
+                const nextIndex = (select.selectedIndex + 1) % select.options.length;
+                select.selectedIndex = nextIndex;
+            }
+        }
+
+        function renderSubjectsList() {
+            const list = document.getElementById('subjects-list');
+            list.innerHTML = '';
+            tempSubjects.forEach((subject) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div style="display: flex; align-items: center;">
+                        <span class="subject-color-preview" style="background-color: ${subject.color};"></span>
+                        <span style="font-weight: 500;">${subject.name}</span>
+                    </div>
+                    <button type="button" class="delete-button" data-id="${subject.id}" style="background-color: var(--accent-color); padding: 4px 10px; font-size: 0.8em;">✕ Eliminar</button>
+                `;
+                li.querySelector('.delete-button').addEventListener('click', (e) => removeSubject(e.target.dataset.id));
+                list.appendChild(li);
+            });
+        }
+        
+        window.addSubject = function() {
+            const name = document.getElementById('new-subject-name').value.trim();
+            const color = document.getElementById('new-subject-color').value;
+            if (!name) { alert('Ingresa el nombre de la materia'); return; }
+            tempSubjects.push({ id: Date.now().toString(), name: name, color: color });
+            document.getElementById('new-subject-name').value = '';
+            renderSubjectsList();
+            renderScheduleSetup();
+            seleccionarSiguienteColor(); 
+        }
+        
+        function removeSubject(subjectId) {
+            tempSubjects = tempSubjects.filter(s => s.id !== subjectId);
+            for (let day in tempSchedule) tempSchedule[day] = tempSchedule[day].filter(id => id !== subjectId);
+            renderSubjectsList();
+            renderScheduleSetup();
+        }
+
+        function renderScheduleSetup() {
+            const scheduleDiv = document.getElementById('schedule-setup');
+            scheduleDiv.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const dayContainer = document.createElement('div');
+                dayContainer.style.marginBottom = '15px';
+                dayContainer.innerHTML = `<label style="font-weight: 600; color: var(--text-main); margin-bottom: 8px; display:block;">${diasNombres[i]}:</label><div id="subjects-for-day-${i}" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>`;
+                scheduleDiv.appendChild(dayContainer);
+                
+                const subjectsContainer = dayContainer.querySelector(`#subjects-for-day-${i}`);
+                tempSubjects.forEach(subject => {
+                    const isAssigned = (tempSchedule[i] || []).includes(subject.id);
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = isAssigned;
+                    checkbox.addEventListener('change', (e) => {
+                        if (!tempSchedule[i]) tempSchedule[i] = [];
+                        if (e.target.checked) { if (!tempSchedule[i].includes(subject.id)) tempSchedule[i].push(subject.id); } 
+                        else { tempSchedule[i] = tempSchedule[i].filter(id => id !== subject.id); }
+                    });
+                    const label = document.createElement('label');
+                    label.textContent = subject.name;
+                    label.style.cssText = `background-color:${subject.color}20; color: ${subject.color}; font-weight: 500; padding:6px 12px; border-radius: 20px; margin-right:5px; display:flex; align-items: center; gap:8px; cursor: pointer; border: 1px solid ${subject.color}40;`;
+                    label.prepend(checkbox);
+                    subjectsContainer.appendChild(label);
+                });
+            }
+        }
+
+        window.saveSettings = function() {
+            const name = document.getElementById('semester-name').value.trim();
+            const startDate = document.getElementById('semester-start-date').value;
+            const endDate = document.getElementById('semester-end-date').value;
+            const apiKey = document.getElementById('api-key-input').value.trim();
+            if (!name || !startDate || !endDate || tempSubjects.length === 0) { alert('Completa todos los campos y añade materias.'); return; }
+            saveApiKey(apiKey); 
+            const newSemester = { id: 'active_semester', name: name, startDate: startDate, endDate: endDate, subjects: tempSubjects, schedule: tempSchedule };
+            saveSemester(newSemester);
+            refreshSemesterInfo();
+            //alert('Configuración guardada.');
+            window.setView('CALENDAR');
+        }
+
+        // ====================
+        // RESET
+        // ====================
+        window.resetApp = function() {
+            const confirmacion = confirm("⚠️ ¿ESTÁS SEGURO?\n\nEsta acción borrará permanentemente:\n- Tu configuración de materias y horario\n- Todas tus notas y chats\n- Tu API Key\n\nNo se puede deshacer.");
+            if (confirmacion) {
+                localStorage.removeItem(STORAGE_KEY_SEMESTER);
+                localStorage.removeItem(STORAGE_KEY_DAY_ENTRIES);
+                localStorage.removeItem(STORAGE_KEY_API);
+                alert("La aplicación se ha reiniciado correctamente.");
+                window.location.reload();
+            }
+        }
+
+        // ====================
+        // DETALLE DÍA & GEMINI
+        // ====================
+        let currentDayEntry = null;
+
+        function loadDayDetail(dateStr) {
+            if (!dateStr || !activeSemester) { window.setView('CALENDAR'); return; }
+            const dayOfWeek = obtenerDiaSemana(dateStr);
+            const [anioStr, mesStr, diaStr] = dateStr.split('-');
+            document.getElementById('day-detail-date-title').textContent = `${diasNombres[dayOfWeek]}, ${diaStr} de ${mesesNombres[parseInt(mesStr) - 1]}`;
+            const allEntries = getAllDayEntries();
+            currentDayEntry = allEntries[dateStr] || initializeDayEntry(dateStr, dayOfWeek);
+            renderNotesSection(dateStr, dayOfWeek);
+            renderChatSection();
+        }
+        
+        function initializeDayEntry(dateStr, dayOfWeek) {
+            const subjectNotes = {};
+            if (estaDentroDelSemestre(dateStr, activeSemester)) {
+                (activeSemester.schedule[dayOfWeek] || []).forEach(subjectId => {
+                    subjectNotes[subjectId] = { content: '', status: DayStatus.EMPTY };
+                });
+            }
+            return { date: dateStr, freeNotes: '', subjectNotes: subjectNotes, chatHistory: [ { role: 'model', text: 'Guarda tus notas y pregúntame lo que quieras sobre ellas.' } ]};
+        }
+
+        function renderNotesSection(dateStr, dayOfWeek) {
+            const container = document.getElementById('subject-notes-container');
+            container.innerHTML = '';
+            
+            if (!estaDentroDelSemestre(dateStr, activeSemester)) {
+                 container.innerHTML = `<div style="text-align:center; padding: 40px; background: #fff1f2; border-radius: 12px; color: #e11d48;"><p style="font-weight:bold; margin-bottom:5px;">⚠️ Fecha fuera del semestre.</p><p style="font-size: 0.9em;">Solo puedes añadir notas libres.</p></div>`;
+            } else {
+                const subjectsToday = activeSemester.schedule[dayOfWeek] || [];
+                if (subjectsToday.length === 0) container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px; background: #f8fafc; border-radius: 12px;">🎉 No hay clases programadas hoy.</div>`;
+
+                subjectsToday.forEach(subjectId => {
+                    const subject = activeSemester.subjects.find(s => s.id === subjectId);
+                    if (!subject) return;
+                    const noteEntry = currentDayEntry.subjectNotes[subjectId] || { content: '', status: DayStatus.EMPTY };
+                    currentDayEntry.subjectNotes[subjectId] = noteEntry;
+
+                    const group = document.createElement('div');
+                    group.className = 'notes-group';
+                    group.style.borderLeft = `5px solid ${subject.color}`;
+                    group.innerHTML = `
+                        <h3 style="color: ${subject.color};">${subject.name}</h3>
+                        <textarea id="note-${subjectId}" placeholder="¿Qué aprendiste hoy en ${subject.name}?" style="min-height: 100px;">${noteEntry.content}</textarea>
+                        <select id="status-${subjectId}" class="status-select" style="margin-top:10px; background-color: ${STATUS_OPTIONS.find(o=>o.value===noteEntry.status).color}">
+                            ${STATUS_OPTIONS.map(opt => `<option value="${opt.value}" ${noteEntry.status === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                        </select>`;
+                    
+                    const select = group.querySelector('select');
+                    select.addEventListener('change', function() {
+                        const selectedOpt = STATUS_OPTIONS.find(o => o.value === this.value);
+                        this.style.backgroundColor = selectedOpt.color;
+                    });
+                    container.appendChild(group);
+                });
+            }
+            document.getElementById('free-notes-input').value = currentDayEntry.freeNotes;
+        }
+        
+        window.saveDayNotes = function() {
+            if (!currentDayEntry || !activeSemester) return;
+            if (estaDentroDelSemestre(currentDayEntry.date, activeSemester)) {
+                activeSemester.subjects.forEach(subject => {
+                    const txt = document.getElementById(`note-${subject.id}`);
+                    const sel = document.getElementById(`status-${subject.id}`);
+                    if (txt && sel) currentDayEntry.subjectNotes[subject.id] = { content: txt.value.trim(), status: sel.value };
+                });
+            }
+            currentDayEntry.freeNotes = document.getElementById('free-notes-input').value.trim();
+            saveDayEntry(currentDayEntry.date, currentDayEntry);
+            alert('Notas guardadas.');
+            renderizarCalendario();
+        }
+        
+        function renderChatSection() {
+            const div = document.getElementById('chat-messages');
+            div.innerHTML = '';
+            
+            currentDayEntry.chatHistory.forEach(msg => {
+                const wrapper = document.createElement('div');
+                wrapper.className = `chat-message ${msg.role === 'user' ? 'chat-user' : 'chat-model'}`;
+                
+                if (msg.role === 'user') {
+                    wrapper.textContent = msg.text; 
+                } else {
+                    let rawHtml = marked.parse(msg.text);
+                    wrapper.innerHTML = rawHtml;
+                    try {
+                        renderMathInElement(wrapper, {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$', right: '$', display: false},
+                                {left: '\\(', right: '\\)', display: false},
+                                {left: '\\[', right: '\\]', display: true}
+                            ],
+                            throwOnError: false
+                        });
+                    } catch (e) { console.error("Error renderizando mates", e); }
+                }
+                div.appendChild(wrapper);
+            });
+            div.scrollTop = div.scrollHeight;
+        }
+
+        // ====================
+        // INTEGRACIÓN CON GEMINI AI
+        // ====================
+        window.sendChatMessage = async function() {
+            const input = document.getElementById('chat-input');
+            const userText = input.value.trim();
+            const apiKey = getApiKey();
+
+            if (!userText) return;
+            if (!apiKey) {
+                alert("Por favor configura tu Google API Key en Configuración primero.");
+                window.setView('SETTINGS');
+                return;
+            }
+
+            currentDayEntry.chatHistory.push({ role: 'user', text: userText });
+            input.value = '';
+            renderChatSection();
+
+            const loadingMsg = { role: 'model', text: 'Analizando notas...' };
+            currentDayEntry.chatHistory.push(loadingMsg);
+            renderChatSection();
+
+            try {
+                let contextoNotas = `Fecha: ${currentDayEntry.date}\n`;
+                
+                if (activeSemester && activeSemester.subjects) {
+                    activeSemester.subjects.forEach(sub => {
+                        const note = currentDayEntry.subjectNotes[sub.id];
+                        if (note && note.content) {
+                            contextoNotas += `Materia: ${sub.name} (Estado: ${note.status})\nApuntes: ${note.content}\n---\n`;
+                        }
+                    });
+                }
+                if (currentDayEntry.freeNotes) {
+                    contextoNotas += `Notas Libres: ${currentDayEntry.freeNotes}\n`;
+                }
+
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+                const prompt = `
+                    Eres un asistente de estudio útil y amigable.
+                    Aquí están las notas del estudiante para el día de hoy:
+                    ${contextoNotas}
+                    
+                    El estudiante pregunta: "${userText}"
+                    
+                    INSTRUCCIONES DE FORMATO:
+                    1. Usa Markdown para **negritas** y listas.
+                    2. Si escribes fórmulas matemáticas, USA SIEMPRE el formato LaTeX encerrado en signos de dólar ($). 
+                       - Para ecuaciones en línea usa un signo: $E=mc^2$
+                       - Para ecuaciones en bloque usa dos signos: $$ \int x dx $$
+                    3. Responde basándote en las notas. Si no está en las notas, usa tu conocimiento general pero avisa que es información externa. Sé conciso.
+                `;
+
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const text = response.text();
+
+                currentDayEntry.chatHistory.pop(); 
+                currentDayEntry.chatHistory.push({ role: 'model', text: text });
+                
+                saveDayEntry(currentDayEntry.date, currentDayEntry);
+                renderChatSection();
+
+            } catch (error) {
+                console.error(error);
+                currentDayEntry.chatHistory.pop();
+                currentDayEntry.chatHistory.push({ role: 'model', text: `Error: ${error.message}. Verifica tu API Key.` });
+                renderChatSection();
+            }
+        }
+
+        document.getElementById('btn-prev').onclick = () => { mes--; if(mes<0){mes=11;anio--;} renderizarCalendario(); };
+        document.getElementById('btn-next').onclick = () => { mes++; if(mes>11){mes=0;anio++;} renderizarCalendario(); };
+        document.getElementById('btn-hoy').onclick = () => { fechaActual=new Date(); mes=fechaActual.getMonth(); anio=fechaActual.getFullYear(); renderizarCalendario(); };
+        document.getElementById('btn-open-settings').onclick = () => window.setView('SETTINGS');
+        document.getElementById('btn-back-to-calendar').onclick = () => window.setView('CALENDAR');
+        document.getElementById('btn-add-subject').onclick = window.addSubject;
+        document.getElementById('btn-save-settings').onclick = window.saveSettings;
+        document.getElementById('btn-reset-all').onclick = window.resetApp; 
+        document.getElementById('btn-save-day-notes').onclick = window.saveDayNotes;
+        document.getElementById('btn-send-chat').onclick = window.sendChatMessage;
+        document.getElementById('chat-input').onkeypress = (e) => { if(e.key === 'Enter') window.sendChatMessage(); };
+
+        if (!getActiveSemester()) { window.setView('SETTINGS'); } else { refreshSemesterInfo(); renderizarCalendario(); }
+    </script>
+</body>
+</html>
