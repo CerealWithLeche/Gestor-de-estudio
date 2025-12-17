@@ -16,7 +16,7 @@ Es una aplicación web diseñada para estudiantes que buscan optimizar su organi
   <img width="660" height="350" alt="Screenshot_17-Dec_14-03-07_32211" src="https://github.com/user-attachments/assets/df26c2dd-6863-4eba-8afd-d858b62c4f40" />
 </div>
 - ---
-#### ⚠️ Zona de Peligro
+### ⚠️ Zona de Peligro
 Para garantizar el control total sobre tus datos, la aplicación incluye una sección de **Zona de Peligro** en el panel de configuración:
 * **Reset Total:** Un botón diseñado para borrar instantáneamente toda la información guardada (materias, notas, historial del chat y configuraciones). 
 * *Nota: Esta acción es irreversible y deja la aplicación como nueva.*
