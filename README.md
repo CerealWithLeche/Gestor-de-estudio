@@ -14,15 +14,28 @@ Es una aplicación web diseñada para estudiantes que buscan optimizar su organi
   <img width="660" height="350" alt="Screenshot_17-Dec_13-58-48_20895" src="https://github.com/user-attachments/assets/96e9abd7-a83d-461e-a675-1382e9931b04" />
 <p></p>
   <img width="660" height="350" alt="Screenshot_17-Dec_14-03-07_32211" src="https://github.com/user-attachments/assets/df26c2dd-6863-4eba-8afd-d858b62c4f40" />
+  
+
 </div>
 
 ---
+## ⚙️ Configuración y Seguridad
+Para comenzar a utilizar el gestor, es necesario completar la configuración inicial en el panel de ajustes:
+
+1. **Conexión con la IA:** Ingresa tu **Google API Key** en la caja de texto dedicada. Esta llave es necesaria para habilitar el servicio de LLM (Gemini) que potencia el chatbot y el análisis de tus notas.
+2. **Definición del Semestre:** Establece la **fecha de inicio y fin** de tu periodo escolar. Esto delimita el rango de acción del calendario dinámico.
+3. **Carga Académica:** - Agrega tus **materias** una a una.
+   - Asigna un **color personalizado** a cada materia para una identificación visual rápida en el calendario.
+4. **Horario Semanal:** Una vez creadas las materias, selecciona los **días de la semana** en los que tienes clase de cada una para que el sistema organice automáticamente tus entradas diarias.
+
+<div align="center">
+<img width="660" height="350" alt="image" src="https://github.com/user-attachments/assets/92b508ca-0c4f-4dd8-afe2-ecbbf641bb8e" />
+<img width="660" height="350" alt="Screenshot_17-Dec_14-03-24_23809" src="https://github.com/user-attachments/assets/5d34c117-dd36-4bee-8f77-2eb085a9168e" />
+</div>
 
 #### ⚠️ Zona de Peligro
 Para garantizar el control total sobre tus datos, la aplicación incluye una sección de **Zona de Peligro** en el panel de configuración:
 * **Reset Total:** Un botón diseñado para borrar instantáneamente toda la información guardada (materias, notas, historial del chat y configuraciones). 
 * *Nota: Esta acción es irreversible y deja la aplicación como nueva.*
 
-<div align="center">
-<img width="660" height="350" alt="Screenshot_17-Dec_14-03-24_23809" src="https://github.com/user-attachments/assets/5d34c117-dd36-4bee-8f77-2eb085a9168e" />
-</div>
+
