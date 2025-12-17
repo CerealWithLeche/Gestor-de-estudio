@@ -21,11 +21,9 @@ Para comenzar a usarla, solo sigue estos dos pasos:
 2. **Abre el archivo** calendario index desde tu navegador
 
 <div align="center">
-  <img width="660" height="350" alt="Screenshot_17-Dec_13-58-48_20895" src="https://github.com/user-attachments/assets/96e9abd7-a83d-461e-a675-1382e9931b04" />
-<p></p>
-  <img width="660" height="350" alt="Screenshot_17-Dec_14-03-07_32211" src="https://github.com/user-attachments/assets/df26c2dd-6863-4eba-8afd-d858b62c4f40" />
-  
-
+   <img width="660" height="350" alt="Screenshot_17-Dec_13-58-48_20895" src="https://github.com/user-attachments/assets/96e9abd7-a83d-461e-a675-1382e9931b04" />
+   <p></p>
+  <img width="660" height="350" alt="image" src="https://github.com/user-attachments/assets/92b508ca-0c4f-4dd8-afe2-ecbbf641bb8e" />
 </div>
 
 ---
@@ -40,8 +38,9 @@ Para comenzar a utilizar el gestor, es necesario completar la configuración ini
 4. **Horario Semanal:** Una vez creadas las materias, selecciona los **días de la semana** en los que tienes clase de cada una para que el sistema organice automáticamente tus entradas diarias.
 
 <div align="center">
-<img width="660" height="350" alt="image" src="https://github.com/user-attachments/assets/92b508ca-0c4f-4dd8-afe2-ecbbf641bb8e" />
-<img width="660" height="350" alt="Screenshot_17-Dec_14-03-24_23809" src="https://github.com/user-attachments/assets/5d34c117-dd36-4bee-8f77-2eb085a9168e" />
+   <img width="660" height="350" alt="Screenshot_17-Dec_14-03-07_32211" src="https://github.com/user-attachments/assets/df26c2dd-6863-4eba-8afd-d858b62c4f40" />
+   <p></p>
+   <img width="660" height="350" alt="Screenshot_17-Dec_14-03-24_23809" src="https://github.com/user-attachments/assets/5d34c117-dd36-4bee-8f77-2eb085a9168e" />
 </div>
 
 #### ⚠️ Zona de Peligro
