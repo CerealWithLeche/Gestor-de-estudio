@@ -14,8 +14,6 @@ Es una aplicación web diseñada para estudiantes que buscan optimizar su organi
   <img width="660" height="350" alt="Screenshot_17-Dec_13-58-48_20895" src="https://github.com/user-attachments/assets/96e9abd7-a83d-461e-a675-1382e9931b04" />
 
   <img width="660" height="350" alt="Screenshot_17-Dec_14-03-07_32211" src="https://github.com/user-attachments/assets/df26c2dd-6863-4eba-8afd-d858b62c4f40" />
-
-<img width="660" height="350" alt="Screenshot_17-Dec_14-03-24_23809" src="https://github.com/user-attachments/assets/5d34c117-dd36-4bee-8f77-2eb085a9168e" />
 </div>
 - ---
 #### ⚠️ Zona de Peligro
